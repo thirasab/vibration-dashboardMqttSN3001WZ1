@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Motor Elevator 6522.18 Dashboard</title>
     
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -12,122 +12,101 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .info-card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: all 0.3s ease; }
-        .info-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; overflow-x: hidden; }
+        .info-card { background: white; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s ease; }
+        .info-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .status-connected { background-color: #22c55e; animation: pulse-green 2s infinite; }
         .status-disconnected { background-color: #ef4444; animation: pulse-red 2s infinite; }
-        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); } 70% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
     </style>
 </head>
-<body class="text-slate-800 p-4 md:p-8">
+<body class="text-slate-800 p-2 md:p-4 h-screen flex flex-col">
 
-    <!-- Header -->
-    <div class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center">
+    <!-- Header (ปรับให้เล็กลงและชิดขึ้น) -->
+    <div class="max-w-7xl mx-auto w-full mb-3 flex justify-between items-center">
         <div>
-            <!-- เปลี่ยนชื่อหัวข้อตรงนี้ -->
-            <h1 class="text-3xl font-bold text-slate-800"><i class="fa-solid fa-industry text-blue-600 mr-3"></i>Motor Elevator 6522.18</h1>
-            <p class="text-slate-500 mt-1">Real-time Vibration Monitoring Dashboard</p>
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800"><i class="fa-solid fa-industry text-blue-600 mr-2"></i>Motor Elevator 6522.18</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Real-time Vibration Monitoring</p>
         </div>
-        <div class="mt-4 md:mt-0 bg-white px-4 py-2 rounded-full shadow-sm flex items-center border border-slate-200">
+        <div class="bg-white px-3 py-1.5 rounded-full shadow-sm flex items-center border border-slate-200">
             <span id="statusIndicator" class="status-dot status-disconnected"></span>
-            <span id="connectionText" class="font-semibold text-sm text-slate-600">Connecting to HiveMQ...</span>
+            <span id="connectionText" class="font-semibold text-xs text-slate-600">Connecting...</span>
         </div>
     </div>
 
-    <!-- Live Values Cards -->
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="info-card p-6 border-t-4 border-blue-500">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Velocity (RMS)</p>
-                    <h3 class="text-3xl font-bold mt-2 text-slate-800"><span id="vel">--</span> <span class="text-lg text-slate-400 font-normal">mm/s</span></h3>
-                </div>
-                <div class="p-3 bg-blue-100 rounded-lg text-blue-500"><i class="fa-solid fa-wind fa-lg"></i></div>
+    <!-- Live Values Cards (ปรับ padding และขนาดฟอนต์ให้กระชับ) -->
+    <div class="max-w-7xl mx-auto w-full grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-3">
+        <div class="info-card p-3 border-t-4 border-blue-500 flex justify-between items-center">
+            <div>
+                <p class="text-[10px] md:text-xs font-semibold text-slate-500 uppercase tracking-wider">Velocity</p>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-800 leading-none mt-1"><span id="vel">--</span> <span class="text-xs md:text-sm text-slate-400 font-normal">mm/s</span></h3>
             </div>
+            <div class="hidden sm:flex text-blue-400 opacity-50"><i class="fa-solid fa-wind fa-lg"></i></div>
         </div>
         
-        <div class="info-card p-6 border-t-4 border-red-500">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Acceleration</p>
-                    <h3 class="text-3xl font-bold mt-2 text-slate-800"><span id="acc">--</span> <span class="text-lg text-slate-400 font-normal">g</span></h3>
-                </div>
-                <div class="p-3 bg-red-100 rounded-lg text-red-500"><i class="fa-solid fa-gauge-high fa-lg"></i></div>
+        <div class="info-card p-3 border-t-4 border-red-500 flex justify-between items-center">
+            <div>
+                <p class="text-[10px] md:text-xs font-semibold text-slate-500 uppercase tracking-wider">Accel</p>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-800 leading-none mt-1"><span id="acc">--</span> <span class="text-xs md:text-sm text-slate-400 font-normal">g</span></h3>
             </div>
+            <div class="hidden sm:flex text-red-400 opacity-50"><i class="fa-solid fa-gauge-high fa-lg"></i></div>
         </div>
 
-        <div class="info-card p-6 border-t-4 border-orange-400">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Temperature</p>
-                    <h3 class="text-3xl font-bold mt-2 text-slate-800"><span id="temp">--</span> <span class="text-lg text-slate-400 font-normal">°C</span></h3>
-                </div>
-                <div class="p-3 bg-orange-100 rounded-lg text-orange-500"><i class="fa-solid fa-temperature-half fa-lg"></i></div>
+        <div class="info-card p-3 border-t-4 border-orange-400 flex justify-between items-center">
+            <div>
+                <p class="text-[10px] md:text-xs font-semibold text-slate-500 uppercase tracking-wider">Temp</p>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-800 leading-none mt-1"><span id="temp">--</span> <span class="text-xs md:text-sm text-slate-400 font-normal">°C</span></h3>
             </div>
+            <div class="hidden sm:flex text-orange-400 opacity-50"><i class="fa-solid fa-temperature-half fa-lg"></i></div>
         </div>
 
-        <div class="info-card p-6 border-t-4 border-purple-500">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Displacement</p>
-                    <h3 class="text-3xl font-bold mt-2 text-slate-800"><span id="disp">--</span> <span class="text-lg text-slate-400 font-normal">µm</span></h3>
-                </div>
-                <div class="p-3 bg-purple-100 rounded-lg text-purple-500"><i class="fa-solid fa-arrows-left-right fa-lg"></i></div>
+        <div class="info-card p-3 border-t-4 border-purple-500 flex justify-between items-center">
+            <div>
+                <p class="text-[10px] md:text-xs font-semibold text-slate-500 uppercase tracking-wider">Disp</p>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-800 leading-none mt-1"><span id="disp">--</span> <span class="text-xs md:text-sm text-slate-400 font-normal">µm</span></h3>
             </div>
+            <div class="hidden sm:flex text-purple-400 opacity-50"><i class="fa-solid fa-arrows-left-right fa-lg"></i></div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+    <!-- Charts Section (ปรับความสูงกราฟให้เตี้ยลง) -->
+    <div class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 flex-grow mb-4">
         
         <!-- Velocity -->
-        <div class="info-card p-5 flex flex-col justify-between">
-            <div>
-                <h2 class="text-lg font-bold text-slate-700 mb-1 pl-2"><i class="fa-solid fa-chart-line text-blue-500 mr-2"></i>Velocity (ความเร็วการสั่นสะเทือน)</h2>
-                <div id="chartVel" class="w-full"></div>
-            </div>
-            <div class="mt-2 bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm text-slate-600">
-                <strong>ความหมาย:</strong> บอก "พลังงานโดยรวม" ที่เครื่องจักรถูกเขย่า สะท้อนปัญหาทางกลไกพื้นฐาน เช่น ศูนย์เพลาไม่ตรง (Misalignment) หรือน็อตยึดแท่นเครื่องหลวม <br>
-                <span class="text-red-500 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> เกณฑ์เตือนภัย: </span>หากค่าพุ่งเกิน 4.5 - 7.1 mm/s ควรวางแผนเข้าตรวจสอบ
+        <div class="info-card p-2 md:p-3 flex flex-col">
+            <h2 class="text-sm md:text-base font-bold text-slate-700 pl-1"><i class="fa-solid fa-chart-line text-blue-500 mr-2"></i>Velocity (ความเร็ว)</h2>
+            <div id="chartVel" class="w-full flex-grow"></div>
+            <div class="mt-1 bg-blue-50 p-1.5 rounded border border-blue-100 text-[10px] md:text-xs text-slate-600 leading-tight">
+                <span class="text-red-500 font-semibold">เตือนภัย:</span> เกิน 4.5 mm/s (เช็กศูนย์เพลา/แท่นเครื่อง)
             </div>
         </div>
         
         <!-- Acceleration -->
-        <div class="info-card p-5 flex flex-col justify-between">
-            <div>
-                <h2 class="text-lg font-bold text-slate-700 mb-1 pl-2"><i class="fa-solid fa-chart-line text-red-500 mr-2"></i>Acceleration (ความเร่งการสั่นสะเทือน)</h2>
-                <div id="chartAcc" class="w-full"></div>
-            </div>
-            <div class="mt-2 bg-red-50 p-3 rounded-lg border border-red-100 text-sm text-slate-600">
-                <strong>ความหมาย:</strong> บอก "แรงกระแทกความถี่สูง" เป็นด่านแรกของการเตือนภัยล่วงหน้า (Early Warning) มักไวต่อความเสียหายระยะเริ่มต้น เช่น เม็ดลูกปืนเริ่มแตก หรือฟันเกียร์บิ่น <br>
-                <span class="text-red-500 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> เกณฑ์เตือนภัย: </span>หากกราฟกระตุกขึ้นฉับพลัน (Spike) แม้เพียงเล็กน้อย ควรตรวจสอบลูกปืนและจาระบี
+        <div class="info-card p-2 md:p-3 flex flex-col">
+            <h2 class="text-sm md:text-base font-bold text-slate-700 pl-1"><i class="fa-solid fa-chart-line text-red-500 mr-2"></i>Acceleration (ความเร่ง)</h2>
+            <div id="chartAcc" class="w-full flex-grow"></div>
+            <div class="mt-1 bg-red-50 p-1.5 rounded border border-red-100 text-[10px] md:text-xs text-slate-600 leading-tight">
+                <span class="text-red-500 font-semibold">เตือนภัย:</span> กราฟกระตุกฉับพลัน (เช็กลูกปืน/เฟือง)
             </div>
         </div>
 
         <!-- Temperature -->
-        <div class="info-card p-5 flex flex-col justify-between">
-            <div>
-                <h2 class="text-lg font-bold text-slate-700 mb-1 pl-2"><i class="fa-solid fa-chart-line text-orange-500 mr-2"></i>Temperature (อุณหภูมิผิวเครื่องจักร)</h2>
-                <div id="chartTemp" class="w-full"></div>
-            </div>
-            <div class="mt-2 bg-orange-50 p-3 rounded-lg border border-orange-100 text-sm text-slate-600">
-                <strong>ความหมาย:</strong> ใช้ยืนยันความผิดปกติรุนแรงที่ทำให้เกิดความร้อนสะสม เช่น การเสียดสีของโลหะที่ขาดการหล่อลื่น หรือมอเตอร์ทำงานหนักเกินกำลัง (Overload) <br>
-                <span class="text-red-500 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ข้อสังเกต: </span>หากกราฟความเร็ว (Velocity) สูงขึ้น และอุณหภูมิพุ่งสูงตาม หมายถึงชิ้นส่วนเริ่มเสียหายหนักแล้ว
+        <div class="info-card p-2 md:p-3 flex flex-col">
+            <h2 class="text-sm md:text-base font-bold text-slate-700 pl-1"><i class="fa-solid fa-chart-line text-orange-500 mr-2"></i>Temperature (อุณหภูมิ)</h2>
+            <div id="chartTemp" class="w-full flex-grow"></div>
+            <div class="mt-1 bg-orange-50 p-1.5 rounded border border-orange-100 text-[10px] md:text-xs text-slate-600 leading-tight">
+                <span class="text-red-500 font-semibold">สังเกต:</span> อุณหภูมิพุ่งพร้อมความเร็ว = เสียดสีรุนแรง
             </div>
         </div>
 
         <!-- Displacement -->
-        <div class="info-card p-5 flex flex-col justify-between">
-            <div>
-                <h2 class="text-lg font-bold text-slate-700 mb-1 pl-2"><i class="fa-solid fa-chart-line text-purple-500 mr-2"></i>Displacement (ระยะการแกว่งตัว)</h2>
-                <div id="chartDisp" class="w-full"></div>
-            </div>
-            <div class="mt-2 bg-purple-50 p-3 rounded-lg border border-purple-100 text-sm text-slate-600">
-                <strong>ความหมาย:</strong> บ่งบอกระยะทางกายภาพที่เครื่องจักรสวิงหลุดจากจุดศูนย์กลาง นิยมใช้ตรวจสอบเครื่องจักรที่หมุนช้ามาก หรือปัญหาจากฐานรากไม่มั่นคง <br>
-                <span class="text-red-500 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ข้อสังเกต: </span>หากค่าสูงผิดปกติ อาจทำให้โครงสร้างเหล็กเกิดการบิดตัวร้าวได้ในระยะยาว
+        <div class="info-card p-2 md:p-3 flex flex-col">
+            <h2 class="text-sm md:text-base font-bold text-slate-700 pl-1"><i class="fa-solid fa-chart-line text-purple-500 mr-2"></i>Displacement (ระยะสวิง)</h2>
+            <div id="chartDisp" class="w-full flex-grow"></div>
+            <div class="mt-1 bg-purple-50 p-1.5 rounded border border-purple-100 text-[10px] md:text-xs text-slate-600 leading-tight">
+                <span class="text-red-500 font-semibold">สังเกต:</span> ค่าสูงบ่งชี้ปัญหาความถี่ต่ำ/โครงสร้างบิดตัว
             </div>
         </div>
     </div>
@@ -144,33 +123,45 @@
         let tempData = [];
         let dispData = [];
 
-        // ================= ฟังก์ชันสร้างกราฟ (ปรับ Fix แกน Y) =================
+        // ================= ฟังก์ชันสร้างกราฟ (ปรับความสูงเหลือ 150) =================
         function createChartConfig(name, color, yMin, yMax) {
             return {
                 series: [{ name: name, data: [] }],
                 chart: {
-                    height: 220,
+                    height: 150, // ลดความสูงลงเพื่อให้พอดีจอ
+                    width: '100%', 
                     type: 'area',
                     fontFamily: 'Inter, sans-serif',
                     animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } },
-                    toolbar: { show: false }
+                    toolbar: { show: false },
+                    sparkline: { enabled: false } // ถ้าอยากให้กราฟชิดขอบไปเลย ให้เปลี่ยนเป็น true ได้
                 },
                 colors: [color],
                 dataLabels: { enabled: false },
                 stroke: { curve: 'smooth', width: 2 },
                 fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
-                xaxis: { categories: timeLabels, labels: { style: { colors: '#94a3b8', fontSize: '10px' } }, tooltip: { enabled: false } },
-                yaxis: { min: yMin, max: yMax, labels: { style: { colors: '#64748b' } } },
-                grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
-                tooltip: { theme: 'dark' }
+                xaxis: { 
+                    categories: timeLabels, 
+                    labels: { show: false }, // ซ่อนตัวเลขเวลาด้านล่างกราฟเพื่อประหยัดพื้นที่แนวตั้ง
+                    tooltip: { enabled: false },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
+                },
+                yaxis: { 
+                    min: yMin, 
+                    max: yMax, 
+                    labels: { style: { colors: '#64748b', fontSize: '9px' }, offsetX: -10 },
+                    tickAmount: 4
+                },
+                grid: { borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: -10, bottom: -10, left: -10, right: 0 } },
+                tooltip: { theme: 'dark', x: { show: false } }
             };
         }
 
-        // กำหนด Y Min, Max: (Velocity 0-20), (Acceleration 0-5), (Temperature 0-100), (Displacement 0-1000)
-        const chartVel = new ApexCharts(document.querySelector("#chartVel"), createChartConfig("Velocity (mm/s)", "#3b82f6", 0, 20));
-        const chartAcc = new ApexCharts(document.querySelector("#chartAcc"), createChartConfig("Acceleration (g)", "#ef4444", 0, 5));
-        const chartTemp = new ApexCharts(document.querySelector("#chartTemp"), createChartConfig("Temperature (°C)", "#f97316", 0, 100));
-        const chartDisp = new ApexCharts(document.querySelector("#chartDisp"), createChartConfig("Displacement (µm)", "#a855f7", 0, 1000));
+        const chartVel = new ApexCharts(document.querySelector("#chartVel"), createChartConfig("Velocity", "#3b82f6", 0, 20));
+        const chartAcc = new ApexCharts(document.querySelector("#chartAcc"), createChartConfig("Acceleration", "#ef4444", 0, 5));
+        const chartTemp = new ApexCharts(document.querySelector("#chartTemp"), createChartConfig("Temperature", "#f97316", 0, 100));
+        const chartDisp = new ApexCharts(document.querySelector("#chartDisp"), createChartConfig("Displacement", "#a855f7", 0, 1000));
 
         chartVel.render();
         chartAcc.render();
@@ -184,7 +175,7 @@
 
         client.on('connect', () => {
             statusIndicator.className = 'status-dot status-connected';
-            connectionText.innerText = 'Online / Monitoring';
+            connectionText.innerText = 'Online';
             connectionText.classList.remove('text-red-500');
             connectionText.classList.add('text-green-600');
             client.subscribe(topic);
@@ -215,10 +206,10 @@
                     dispData.shift();
                 }
                 
-                chartVel.updateSeries([{ data: velData }]); chartVel.updateOptions({ xaxis: { categories: timeLabels } });
-                chartAcc.updateSeries([{ data: accData }]); chartAcc.updateOptions({ xaxis: { categories: timeLabels } });
-                chartTemp.updateSeries([{ data: tempData }]); chartTemp.updateOptions({ xaxis: { categories: timeLabels } });
-                chartDisp.updateSeries([{ data: dispData }]); chartDisp.updateOptions({ xaxis: { categories: timeLabels } });
+                chartVel.updateSeries([{ data: velData }]); 
+                chartAcc.updateSeries([{ data: accData }]); 
+                chartTemp.updateSeries([{ data: tempData }]); 
+                chartDisp.updateSeries([{ data: dispData }]); 
 
             } catch (e) {
                 console.error("JSON Parsing Error: ", e);
@@ -228,7 +219,7 @@
         client.on('error', (err) => {
             console.error('Connection error: ', err);
             statusIndicator.className = 'status-dot status-disconnected';
-            connectionText.innerText = 'Connection Lost';
+            connectionText.innerText = 'Disconnected';
             connectionText.classList.remove('text-green-600');
             connectionText.classList.add('text-red-500');
         });
