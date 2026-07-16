@@ -126,19 +126,28 @@
                 { name: 'Velocity (mm/s)', type: 'area', data: [] },
                 { name: 'Frequency (Hz)', type: 'line', data: [] }
             ],
-            chart: { id: 'chartVelId', height: 160, width: '100%', fontFamily: 'Inter, sans-serif', animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } }, toolbar: { show: false } },
+            // ปรับความสูงกราฟขึ้นนิดหน่อยเพื่อรองรับพื้นที่สำหรับเวลาด้านล่าง
+            chart: { id: 'chartVelId', height: 180, width: '100%', fontFamily: 'Inter, sans-serif', animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } }, toolbar: { show: false } },
             colors: ['#2563eb', '#10b981'], 
             stroke: { curve: 'smooth', width: [3, 4] }, 
             fill: { type: ['gradient', 'solid'], opacity: [0.3, 1], gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.05, stops: [0, 100] } },
-            xaxis: { categories: timeLabels, labels: { show: false }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
             
-            // ปล่อยแกน Y ลอยตัว (Auto-Scale) + บังคับทศนิยม 1 ตำแหน่ง
+            // เปิดให้แสดงเวลาแกน X และซ่อนเส้นแกนเพื่อความสะอาด
+            xaxis: { 
+                categories: timeLabels, 
+                labels: { show: true, style: { colors: '#94a3b8', fontSize: '9px' } }, 
+                tooltip: { enabled: false }, 
+                axisBorder: { show: false }, 
+                axisTicks: { show: false } 
+            },
+            
             yaxis: [
                 { decimalsInFloat: 1, labels: { style: { colors: '#2563eb', fontSize: '10px', fontWeight: '700' }, offsetX: -10 } }, 
                 { opposite: true, decimalsInFloat: 1, labels: { style: { colors: '#10b981', fontSize: '10px', fontWeight: '700' }, offsetX: -10 } } 
             ],
             
-            grid: { borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, bottom: -10, left: 10, right: 10 } },
+            // เพิ่ม bottom padding เพื่อไม่ให้ตัวเลขเวลาโดนตัด
+            grid: { borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, bottom: 5, left: 10, right: 10 } },
             tooltip: { theme: 'dark', shared: true, intersect: false, x: { show: true } },
             legend: { show: true, position: 'top', horizontalAlign: 'right', fontSize: '11px', fontWeight: 600, markers: { radius: 12 } } 
         };
@@ -149,19 +158,27 @@
         function createChartConfig(chartId, name, color) {
             return {
                 series: [{ name: name, data: [] }],
-                chart: { id: chartId, height: 160, width: '100%', type: 'area', fontFamily: 'Inter, sans-serif', animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } }, toolbar: { show: false } },
+                chart: { id: chartId, height: 180, width: '100%', type: 'area', fontFamily: 'Inter, sans-serif', animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 1000 } }, toolbar: { show: false } },
                 colors: [color], dataLabels: { enabled: false },
                 stroke: { curve: 'smooth', width: 3 }, 
                 fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
-                xaxis: { categories: timeLabels, labels: { show: false }, tooltip: { enabled: false }, axisBorder: { show: false }, axisTicks: { show: false } },
                 
-                // ปล่อยแกน Y ลอยตัว (Auto-Scale) + บังคับทศนิยม 1 ตำแหน่ง
+                // เปิดให้แสดงเวลาแกน X
+                xaxis: { 
+                    categories: timeLabels, 
+                    labels: { show: true, style: { colors: '#94a3b8', fontSize: '9px' } }, 
+                    tooltip: { enabled: false }, 
+                    axisBorder: { show: false }, 
+                    axisTicks: { show: false } 
+                },
+                
                 yaxis: { 
                     decimalsInFloat: 1,
                     labels: { style: { colors: color, fontSize: '10px', fontWeight: '700' }, offsetX: -10 }
                 },
                 
-                grid: { borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, bottom: -10, left: -10, right: 0 } },
+                // เพิ่ม bottom padding เพื่อไม่ให้ตัวเลขเวลาโดนตัด
+                grid: { borderColor: '#f1f5f9', strokeDashArray: 4, padding: { top: 0, bottom: 5, left: -10, right: 0 } },
                 tooltip: { theme: 'dark', x: { show: true } }
             };
         }
@@ -199,6 +216,7 @@
                     document.getElementById('freq').innerText = data.frequency.toFixed(1);
                 }
 
+                // รูปแบบเวลา ชั่วโมง:นาที:วินาที
                 const now = new Date().toLocaleTimeString([], { hour12: false }); 
                 timeLabels.push(now);
                 velData.push(data.velocity); accData.push(data.acceleration);
@@ -209,7 +227,6 @@
                     timeLabels.shift(); velData.shift(); accData.shift(); tempData.shift(); dispData.shift(); freqData.shift();
                 }
                 
-                // *** จุดสำคัญที่แก้ไขปัญหา 100%: อัปเดตข้อมูลและเวลาแกน X ไปพร้อมกันด้วย updateOptions ***
                 chartVel.updateOptions({
                     series: [
                         { name: 'Velocity (mm/s)', type: 'area', data: velData }, 
